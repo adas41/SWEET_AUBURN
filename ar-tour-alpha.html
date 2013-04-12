@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html> 
+	<head> 
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8"/> 
+		<title>Select your destination</title> 
+		
+		<link rel="stylesheet" href="./assets/css/styles.css" />
+		
+		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
+		<script type="text/javascript" src="./assets/js/jquery.1.9.js"></script>	   
+	</head> 
+	<body style=""> 
+	
+		
+	
+		<div id="container" class="container" style="">
+			<div id="desList" style="display:block">
+				<div id="des1" class="destinationDiv" style="" onclick="showRoute(destination1);">
+					The Royal Peacock
+				</div>
+				<div id="des2" class="destinationDiv" style="" onclick="showRoute(destination2);">
+					MLK Memorial
+				</div>
+				<div id="des3" class="destinationDiv" style="" onclick="showRoute(destination3);">
+					Oakland Foundation
+				</div>
+			</div>
+			
+			<div id="ratioDiv" class="infoDiv" ></div>
+			
+			<div id="summaryDiv" class="infoDiv"></div>	
+			<div id="distanceDiv" class="infoDiv"></div>
+			<div id="durationDiv" class="infoDiv"></div>
+			
+			<div id="directionDiv" class="directionDiv"></div>
+			
+			<div id="map-div" style="display:none">
+				<center>
+					<div id="map" style="margin-left:5%; margin-right:5%; width:220px; height:320px"></div>
+				</center>
+			</div>
+			
+		</div>
+		
+		<!--<center>
+			<button id="startTour" onclick="startTour();" disabled>Start Tour</button>
+		</center>-->
+		
+			
+		<center>
+			<audio style="bottom:10%" id="audio" height="100" width="100">
+			  <source src="" type="audio/mpeg">
+			  <embed height="50" width="100" src="./assets/audio/audio2.mp3">
+			</audio> 
+		</center>
+		
+		<!--
+		
+			Once Start Tour is initiated
+				Show Overview - Distance, Estimated Time
+				Track location in a loop - polling
+				OnLocationChange show next direction text
+		
+		-->
+		
+		
+			
+		
+		<script type="text/javascript"> 
+   
+			var coordinates = {
+				latitude: 0.0,
+				longitude: 0.0
+			};
+			
+			desCoords = "33.756351, -84.381616";
+			
+			
+			var destination1 = {
+				name: 'The Royal Peacock',
+				latitude: 32.729374,//33.756351,
+				longitude: -97.112211//-84.381616
+			};
+			
+			var destination2 = {
+				name: 'MLK Memorial',
+				latitude: 33.754852,
+				longitude: -84.373291
+			};
+			
+			var destination3 = {
+				name: 'Oakland Foundation',
+				latitude: 33.748572,
+				longitude: -84.373033
+			};
+			
+			var selectedDestination = {
+				name: '',
+				latitude: 0,
+				longitude: 0
+			};
+			
+			var audioObj2 ={
+				url: './assets/audio/audio2.mp3',
+				isPlayedOnce: false
+			};
+			var audioObj3 ={
+				url: './assets/audio/audio3.mp3',
+				isPlayedOnce: false
+			};
+			
+			var audioTrackList = [audioObj2,audioObj3];
+			
+			var thresholdValue = 0.03;
+			
+			var map;
+			var directionsService;
+			var directionsDisplay;
+			var request;
+			
+			var originalDistance;
+			
+			var duration;
+			var distance;
+			var direction;
+			
+			//alert(localStorage.destination);
+			
+				if (navigator.geolocation){
+					navigator.geolocation.getCurrentPosition(showPosition);
+				}
+				else{
+					alert("Geolocation is not supported by this browser!");
+				}
+					
+				function showPosition(position){
+					coordinates.latitude = position.coords.latitude;
+					coordinates.longitude = position.coords.longitude;
+				}
+				
+				directionsService = new google.maps.DirectionsService();
+				directionsDisplay = new google.maps.DirectionsRenderer();
+
+				map = new google.maps.Map(document.getElementById('map'), {
+					zoom:9,
+					mapTypeId: google.maps.MapTypeId.ROADMAP
+				});
+
+				directionsDisplay.setMap(map);
+				
+			
+			//hideAudioAfterPlayBack('audio');
+			
+			
+			document.getElementById('audio').addEventListener('ended', function(){
+				this.currentTime = 0;
+				if (this.hasAttribute("controls")) {
+					this.removeAttribute("controls")   
+				} 
+			}, false);
+			
+			
+			function startAudioPlayBack(id,src){
+				var audio = document.getElementById(id);
+				audio.src = src;
+				audio.setAttribute("controls","controls");
+				audio.play();
+				console.log("Loaded "+audio.src);
+			}
+			
+			function audioPlayBackTimer(id, distance){
+				var audio = document.getElementById(id);
+				console.log(distance+","+originalDistance);
+				if(distance <= originalDistance){
+					var ratio = Math.round(distance/originalDistance*100)/100;
+					/*if(ratio > 0.25 && ratio <= 0.5){
+						if(audio.paused){
+							audio.src = '';
+						}						
+					}
+					else if(ratio > 0.5 && ratio <= 0.75){
+					}
+					else{
+					}*/					
+					$("#ratioDiv").text(ratio);
+					$("#ratioDiv").css('top','10%');
+					$("#ratioDiv").css('display','block');
+					
+					if(ratio <= thresholdValue){
+						//end of tour
+						window.location.assign('tour-end.html');
+						//$("#directionDiv").html("You have arrived at your destination.");
+						//$("#distanceDiv").css('display','none');
+						//$("#durationDiv").css('display','none');
+					}
+					if(ratio <= 0.5){
+						if(audio.paused){
+							if(!audioTrackList[1].isPlayedOnce){
+								startAudioPlayBack(id,audioTrackList[1].url);
+								audioTrackList[1].isPlayedOnce = true;
+							}	
+						}	
+					}
+				}
+			}
+	 
+			function showRoute(destinationObj){
+				//$("#startTour").removeAttr('disabled');
+				selectedDestination = destinationObj;
+				
+				request = {
+					origin: coordinates.latitude+","+coordinates.longitude, 
+					destination: destinationObj.latitude+","+destinationObj.longitude,
+					travelMode: google.maps.DirectionsTravelMode.WALKING
+				};
+				
+				$("#desList").css('display','none');
+				
+				startTour();
+				
+				/*directionsService.route(request, function(response, status) {
+					if (status == google.maps.DirectionsStatus.OK) {
+						directionsDisplay.setDirections(response);
+						$("#map-div").css('visibility','visible');
+						$("#desList").css('display','none');
+					}
+				});*/
+				
+			}
+			
+			function setDivStyle(){
+				
+				$("#directionDiv").css('display','block');
+				$("#directionDiv").fadeIn('slow');
+						
+				$("#distanceDiv").css('display','inline');
+				$("#distanceDiv").css('left','0%');
+				$("#distanceDiv").css('margin-left','5%');
+				$("#distanceDiv").css('margin-right','5%');
+				$("#distanceDiv").css('top','70%');
+				$("#distanceDiv").css('width','35%');
+						
+				$("#durationDiv").css('display','inline');
+				$("#durationDiv").css('left','50%');
+				$("#durationDiv").css('margin-left','5%');
+				$("#durationDiv").css('margin-right','5%');
+				$("#durationDiv").css('top','70%');
+				$("#durationDiv").css('width','35%');
+			}
+			
+			
+			function isDestinationReached(curLat, curLong, desLat, desLong){
+				if(Math.abs(curLat - desLat) <= thresholdValue && Math.abs(curLong - desLong) <= thresholdValue){
+					return true;
+				}
+				else{
+					return false;
+				}
+			}
+			
+			function startTour(){
+				//$("#map-div").css('visibility','hidden');
+				
+				directionsService.route(request, function(response, status) {
+					if (status == google.maps.DirectionsStatus.OK) {
+						//console.log(response);
+						
+						duration = response.routes[0].legs[0].duration.text
+						originalDistance = distance = response.routes[0].legs[0].distance.value;
+						direction = response.routes[0].legs[0].steps[0].instructions;
+						var summaryText = response.routes[0].summary;
+						console.log(summaryText);
+						
+						$("#summaryDiv").css('display','block');
+						$("#summaryDiv").css('top','30%');
+						$("#distanceDiv").css('display','block');
+						$("#distanceDiv").css('top','43%');
+						$("#durationDiv").css('display','block');
+						$("#durationDiv").css('top','56%');
+						
+						$("#summaryDiv").text(summaryText);
+						$("#distanceDiv").text(Math.round(distance*0.000621371*10)/10+" mi");
+						$("#durationDiv").text(duration);
+						
+						
+						$("#summaryDiv").fadeOut(12000, function(){
+							$("#summaryDiv").css('display','none');
+						});
+						$("#distanceDiv").fadeOut(12000, function(){
+							$("#distanceDiv").css('display','none');
+						});
+						$("#durationDiv").fadeOut(12000, function(){
+							$("#durationDiv").css('display','none');
+							//$("#directionDiv").css('display','block');
+							//$("#directionDiv").html(direction);
+							//$("#directionDiv").fadeIn('slow');
+							
+							startAudioPlayBack('audio',audioTrackList[0].url);
+							
+							setDivStyle();
+							
+							var watchID = navigator.geolocation.watchPosition(function(position) {
+								/*if(isDestinationReached(position.coords.latitude, position.coords.longitude,selectedDestination.latitude, selectedDestination.longitude)){
+																		
+									$("#directionDiv").html("You have arrived at your destination");
+									$("#distanceDiv").css("display", "none");
+									$("#durationDiv").css("display", "none");
+									
+									// end watchPosition() callback
+								}*/
+								//else{
+									setNextInstruction(position.coords.latitude, position.coords.longitude);
+								//}
+								
+							});
+						});				
+					}
+				});
+			}
+			
+			function setNextInstruction(lat, lon){
+				console.log("position changed to "+lat+","+lon+". Finding direction to "+selectedDestination.latitude+","+selectedDestination.longitude);
+				request = {
+					origin: lat+","+lon, 
+					destination: selectedDestination.latitude+","+selectedDestination.longitude,
+					travelMode: google.maps.DirectionsTravelMode.WALKING
+				};
+				
+				directionsService.route(request, function(response, status) {
+					if (status == google.maps.DirectionsStatus.OK) {
+						//console.log(response);
+						
+						direction = response.routes[0].legs[0].steps[0].instructions;
+						duration = response.routes[0].legs[0].duration.text
+						distance = response.routes[0].legs[0].distance.value;
+						
+						// Audio timer
+						audioPlayBackTimer('audio', distance);
+						
+						$("#directionDiv").html(direction);
+						$("#distanceDiv").text(Math.round(distance*0.000621371*10)/10+" mi");
+						$("#durationDiv").text(duration);
+					}
+				});
+			}
+	 
+		</script>
+		
+	</body>
+</html>

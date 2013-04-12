@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html> 
+	<head> 
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8"/> 
+		<title>AR Tour</title> 
+		
+		<link rel="stylesheet" href="./assets/css/styles.css" />
+		
+		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
+		<script type="text/javascript" src="./assets/js/jquery.1.9.js"></script>	   
+	</head> 
+	<body style=""> 
+	
+		
+	
+		<div id="container" class="container" style="">
+			
+			<div id="ratioDiv" class="ratioDiv" ></div>
+			
+			<div id="toolbar">
+				<div id="summaryDiv" class="infoDiv"></div>	
+				<div id="distanceDiv" class="infoDiv"></div>
+				<div id="audioControl" ></div>
+				<div id="durationDiv" class="infoDiv"></div>
+			</div>
+			
+			<div id="directionDiv" class="directionDiv"></div>
+			
+			
+			
+		</div>
+		
+			
+		<center>
+			<audio style="bottom:10%" id="audio" height="100" width="100">
+			  <source src="" type="audio/mpeg">
+			  <embed height="50" width="100" src="./assets/audio/audio2.mp3">
+			</audio> 
+		</center>
+		
+		
+		<script type="text/javascript"> 
+		
+			$("#summaryDiv").text("Preparing your route...");
+				$("#summaryDiv").fadeOut(5000, function(){
+				$("#summaryDiv").css('display','none');
+			});
+   
+			var coordinates = {
+				latitude: 0.0,
+				longitude: 0.0
+			};
+			
+			var selectedDestination = {
+				name: '',
+				latitude: 0,
+				longitude: 0
+			};
+			
+			var audioObj2 ={
+				url: './assets/audio/audio2.mp3',
+				isPlayedOnce: false
+			};
+			var audioObj3 ={
+				url: './assets/audio/audio3.mp3',
+				isPlayedOnce: false
+			};
+			
+			var audioTrackList = [audioObj2,audioObj3];
+			
+			var thresholdValue = 0.03;
+			
+			var map;
+			var directionsService;
+			var directionsDisplay;
+			var request;
+			
+			var originalDistance;
+			
+			var duration;
+			var distance;
+			var direction;
+			
+			if (navigator.geolocation){
+				navigator.geolocation.getCurrentPosition(showPosition);
+			}
+			else{
+				alert("Geolocation is not supported by this browser!");
+			}
+					
+			function showPosition(position){
+				coordinates.latitude = position.coords.latitude;
+				coordinates.longitude = position.coords.longitude;
+					
+				var destinationObj = {
+					name: localStorage.name,
+					latitude: localStorage.latitude,
+					longitude: localStorage.longitude
+				};
+					
+				directionsService = new google.maps.DirectionsService();
+				directionsDisplay = new google.maps.DirectionsRenderer();
+				showRoute(destinationObj);
+			}
+				
+			
+			document.getElementById('audio').addEventListener('ended', function(){
+				this.currentTime = 0;
+				$("#audioControl").html("<img src='./assets/img/play.png' style='opacity:0.6;'/>");
+				if (this.hasAttribute("controls")) {
+					this.removeAttribute("controls")   
+				} 
+			}, false);
+			
+			
+			$("#audioControl").click(function() {
+				//alert("Handler for .click() called.");
+				var audio = document.getElementById('audio');
+				if(audio.paused){
+					audio.play();
+					$("#audioControl").fadeIn('fast');
+					$("#audioControl").html("<img src='./assets/img/pause.png' style='opacity:0.6'/>");
+				}
+				else{
+					audio.pause();
+					$("#audioControl").fadeIn('fast');
+					$("#audioControl").html("<img src='./assets/img/play.png' style='opacity:0.6'/>");
+				}
+				
+			});
+			
+			
+			function startAudioPlayBack(id,src){
+				var audio = document.getElementById(id);
+				audio.src = src;
+				//audio.setAttribute("controls","controls");
+				$("#audioControl").html("<img src='./assets/img/pause.png' style='opacity:0.6'/>");
+				audio.play();
+				console.log("Loaded "+audio.src);
+			}
+			
+			function audioPlayBackTimer(id, distance){
+				var audio = document.getElementById(id);
+				console.log(distance+","+originalDistance);
+				if(distance <= originalDistance){
+					var ratio = Math.round(distance/originalDistance*100)/100;
+					/*if(ratio > 0.25 && ratio <= 0.5){
+						if(audio.paused){
+							audio.src = '';
+						}						
+					}
+					else if(ratio > 0.5 && ratio <= 0.75){
+					}
+					else{
+					}*/					
+					$("#ratioDiv").text(ratio);
+					$("#ratioDiv").css('top','10%');
+					//$("#ratioDiv").css('display','block');
+					
+					if(ratio <= thresholdValue){
+						window.location.assign('tour-end.html'); //end of tour
+					}
+					if(ratio <= 0.5){
+						if(audio.paused){
+							if(!audioTrackList[1].isPlayedOnce){
+								startAudioPlayBack(id,audioTrackList[1].url);
+								audioTrackList[1].isPlayedOnce = true;
+							}	
+						}	
+					}
+				}
+			}
+	 
+			function showRoute(destinationObj){
+				selectedDestination = destinationObj;
+				request = {
+					origin: coordinates.latitude+","+coordinates.longitude, 
+					destination: selectedDestination.latitude+","+selectedDestination.longitude,
+					travelMode: google.maps.DirectionsTravelMode.WALKING
+				};
+				$("#desList").css('display','none');
+				startTour();
+				
+			}
+			
+			function setDivStyle(){
+			
+				$("#toolbar").css('position','absolute');
+				$("#toolbar").css('bottom','10px');
+				
+				$("#directionDiv").css('display','block');
+				$("#directionDiv").fadeIn('slow');
+						
+				$("#distanceDiv").css('display','inline');
+				$("#distanceDiv").css('left','0%');
+				$("#distanceDiv").css('margin-left','0px');
+				$("#distanceDiv").css('margin-right','0px');
+				$("#distanceDiv").css('bottom','95%');
+				$("#distanceDiv").css('float','left');
+				$("#distanceDiv").css('width','80px');
+				$("#distanceDiv").css('padding-left','1px');
+				$("#distanceDiv").css('padding-right','1px');
+				
+				$("#audioControl").css('display','inline');
+				$("#audioControl").css('position','relative');
+				$("#audioControl").css('left','0%');
+				$("#audioControl").css('margin-left','5px');
+				$("#audioControl").css('margin-right','5px');
+				$("#audioControl").css('bottom','95%');
+				//$("#audioControl").html("<img src='./assets/img/play.png' style='opacity:0.6'/>"); //
+				$("#audioControl").css('float','left');
+				$("#audioControl").css('width','50px');
+				$("#audioControl").css('padding-left','0px');
+				$("#audioControl").css('padding-right','0px');
+						
+				$("#durationDiv").css('display','inline');
+				$("#durationDiv").css('left','0%');
+				$("#durationDiv").css('margin-left','10px');
+				$("#durationDiv").css('margin-right','0px');
+				$("#durationDiv").css('bottom','95%');
+				$("#durationDiv").css('float','left');
+				$("#durationDiv").css('width','80px');
+				$("#durationDiv").css('padding-left','1px');
+				$("#durationDiv").css('padding-right','1px');
+			}
+						
+			function startTour(){
+				
+				directionsService.route(request, function(response, status) {
+					if (status == google.maps.DirectionsStatus.OK) {
+						
+						duration = response.routes[0].legs[0].duration.value
+						originalDistance = distance = response.routes[0].legs[0].distance.value;
+						direction = response.routes[0].legs[0].steps[0].instructions;
+						var summaryText = response.routes[0].summary;
+						console.log(summaryText);
+						
+						$("#summaryDiv").css('display','block');
+						$("#summaryDiv").css('top','30%');
+						$("#distanceDiv").css('display','block');
+						$("#distanceDiv").css('top','43%');
+						$("#durationDiv").css('display','block');
+						$("#durationDiv").css('top','56%');
+						
+						$("#summaryDiv").text(summaryText);
+						$("#distanceDiv").text(Math.round(distance*0.000621371*10)/10+" mi");
+						$("#durationDiv").text(Math.round(duration/60)+" min");
+						
+						
+						$("#summaryDiv").fadeOut(12000, function(){
+							$("#summaryDiv").css('display','none');
+						});
+						$("#distanceDiv").fadeOut(12000, function(){
+							$("#distanceDiv").css('display','none');
+						});
+						$("#durationDiv").fadeOut(12000, function(){
+							$("#durationDiv").css('display','none');
+							startAudioPlayBack('audio',audioTrackList[0].url);
+							setDivStyle();							
+							var watchID = navigator.geolocation.watchPosition(function(position) {
+								setNextInstruction(position.coords.latitude, position.coords.longitude);	
+							});
+						});				
+					}
+				});
+			}
+			
+			function setNextInstruction(lat, lon){
+				console.log("position changed to "+lat+","+lon+". Finding direction to "+selectedDestination.latitude+","+selectedDestination.longitude);
+				request = {
+					origin: lat+","+lon, 
+					destination: selectedDestination.latitude+","+selectedDestination.longitude,
+					travelMode: google.maps.DirectionsTravelMode.WALKING
+				};
+				
+				directionsService.route(request, function(response, status) {
+					if (status == google.maps.DirectionsStatus.OK) {
+						
+						direction = response.routes[0].legs[0].steps[0].instructions;
+						duration = response.routes[0].legs[0].duration.value
+						distance = response.routes[0].legs[0].distance.value;
+						
+						// Audio timer
+						audioPlayBackTimer('audio', distance);
+						
+						$("#directionDiv").html(direction);
+						$("#distanceDiv").text(Math.round(distance*0.000621371*10)/10+" mi");
+						$("#durationDiv").text(Math.round(duration/60)+" min");
+					}
+				});
+			}
+	 
+		</script>
+		
+	</body>
+</html>

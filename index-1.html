@@ -1,0 +1,228 @@
+<html>
+    <head>
+    <title>Frame Marker Demo</title>
+    <link rel="stylesheet" href="jslog.css" />
+    <link rel="apple-touch-icon" href="images/sample_icon_57x57.png" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta name="arenabled" />
+    <script>
+    
+        var myAppController = {
+		
+		
+          
+            onArgonReady: function() {
+			
+                var frameMarker1 = 
+                    new ARGON.FrameMarkerTarget(24, "MyFrameMarker1", 50);
+
+                var trackedObject1 = new ARGON.TrackedObject();
+                trackedObject1.setTarget(frameMarker1);
+                
+                var divEl1 = document.createElement("div");
+                divEl1.className = "markerScreen";
+                divEl1.style.width = "190px";
+                divEl1.style.height = "40px";
+				 divEl1.style.lineHeight = "40px";
+                divEl1.innerText = "Butler Street YMCA";
+
+                divEl1.style.backgroundColor = "rgba(255,255,0,0.6)";
+                divEl1.style.border = "2px solid white";
+                divEl1.style.borderRadius = "5px";
+                divEl1.style.color = "black";
+                divEl1.style.fontFamily = "calibri";
+                divEl1.style.fontSize = "1.1em";
+                //divEl1.style.opacity = "0.6";
+                divEl1.addEventListener("click", function() {
+                    openMenuScreen("Butler St. YMCA");
+                }, false);
+                
+                var cssObject1 = new THREE.CSSObject(divEl1);
+                cssObject1.width = 50;
+                cssObject1.height = 20;
+                cssObject1.position.x = 0.0;
+                cssObject1.position.y = 40.0;
+                cssObject1.position.z = 0.0;
+                trackedObject1.add(cssObject1);
+                
+                bottomBar("More locations on Sweet Auburn...");
+				
+				
+				
+				/*var frameMarker2 = 
+				    new ARGON.FrameMarkerTarget(14, "MyFrameMarker2", 50);
+
+                var trackedObject2 = new ARGON.TrackedObject();
+                trackedObject2.setTarget(frameMarker2);
+                
+                var divEl2 = document.createElement("div");
+                divEl2.style.width = "50px";
+                divEl2.style.height = "50px";
+                divEl2.style.backgroundColor = "green";
+                divEl2.style.fontSize = "10px";
+                divEl2.innerText = "Marker 14";
+                
+                var cssObject2 = new THREE.CSSObject(divEl2);
+                cssObject2.width = 50;
+                cssObject2.height = 50;
+                cssObject2.position.x = 0.0;
+                cssObject2.position.y = 0.0;
+                cssObject2.position.z = 0.0;
+                trackedObject2.add(cssObject2);*/
+            }
+        };
+        
+        document.addEventListener(
+            "AR.ArgonReadyEvent", myAppController.onArgonReady
+        );
+        
+        function openMenuScreen(locationName) {
+            closeMarkerScreen();
+            popupBox(locationName, "10%", "15%");
+            popupBox("Take me there!", "10%", "40%", function() {
+                //closeMenu();
+                //navigateTo(locationName);
+            });
+            popupBox("Virtual Tour", "10%", "50%", function() {
+                closeMenuScreen();
+                openPanorama();
+            });
+            popupBox("Cancel", "10%", "60%", function() {
+                closeMenuScreen();
+                openMarkerScreen();
+            });
+        }
+        
+        // menu box popup
+        function popupBox(label, height, topOffset, onclickEvent) {
+            var popupDiv = document.createElement("div");
+            var textDiv = document.createElement("div");
+            popupDiv.className = "menuScreen";
+            
+            textDiv.style.color = "black";
+            textDiv.style.fontFamily = "sans-serif";
+            textDiv.style.fontSize = "24px";
+            popupDiv.style.left = "0";
+            textDiv.style.position = "absolute";
+            textDiv.style.top = "12px";
+            textDiv.style.width = "100%";
+            textDiv.innerText = label;
+            
+            popupDiv.style.backgroundColor = "yellow";
+            popupDiv.style.border = "1px solid gray";
+            popupDiv.style.height = height;
+            popupDiv.style.left = "20%";
+            popupDiv.style.opacity = "0.6";
+            popupDiv.style.position = "absolute";
+            popupDiv.style.top = topOffset;
+            popupDiv.style.width = "60%";
+            
+            if (onclickEvent) {
+                popupDiv.addEventListener("click", onclickEvent);
+            }
+            
+            popupDiv.appendChild(textDiv);
+            document.body.appendChild(popupDiv);
+        }
+        
+        function bottomBar(label) {
+            var wrapperDiv = document.createElement("div");
+            var handleDiv = document.createElement("div");
+            var textDiv = document.createElement("div");
+            
+            handleDiv.id = "bottomBarHandle";
+            handleDiv.className = "markerScreen";
+            handleDiv.style.backgroundColor = "gray";
+            handleDiv.style.color = "black";
+            handleDiv.style.fontFamily = "sans-serif";
+            handleDiv.style.fontSize = "12px";
+            handleDiv.style.height = "16px";
+            handleDiv.style.left = "0";
+            handleDiv.style.opacity = "0.6";
+            handleDiv.style.position = "absolute";
+            handleDiv.style.top = "394px";
+            handleDiv.style.width = "100%";
+            handleDiv.innerText = "=";
+            handleDiv.addEventListener("click", openBottomBar);
+            function openBottomBar() {
+                var curDiv = document.getElementById("bottomBarText");
+                curDiv.style.display = "block";
+                curDiv = document.getElementById("bottomBarHandle");
+                curDiv.style.top = "356px";
+                curDiv.removeEventListener("click", openBottomBar);
+                curDiv.addEventListener("click", closeBottomBar);
+            }
+            function closeBottomBar() {
+                var curDiv = document.getElementById("bottomBarText");
+                curDiv.style.display = "none";
+                curDiv = document.getElementById("bottomBarHandle");
+                curDiv.style.top = "394px";
+                curDiv.removeEventListener("click", closeBottomBar);
+                curDiv.addEventListener("click", openBottomBar);
+            }
+            
+            textDiv.id = "bottomBarText";
+            textDiv.className = "markerScreen";
+            textDiv.style.backgroundColor = "yellow";
+            textDiv.style.color = "black";
+            textDiv.style.display = "none";
+            textDiv.style.fontFamily = "sans-serif";
+            textDiv.style.fontSize = "18px";
+            textDiv.style.height = "38px";
+            textDiv.style.left = "0";
+            textDiv.style.opacity = "0.6";
+            textDiv.style.position = "absolute";
+            textDiv.style.top = "372px";
+            textDiv.style.width = "100%";
+            textDiv.innerText = "More locations...";
+            
+            document.body.appendChild(handleDiv);
+            document.body.appendChild(textDiv);
+        }
+        
+        function openMarkerScreen() {
+            var markerPopups = document.getElementsByClassName("markerScreen");
+            for (var i = 0; i < markerPopups.length; i++) {
+                markerPopups.item(i).style.display = "block";
+            }
+        }
+        
+        function closeMarkerScreen() {
+            var markerPopups = document.getElementsByClassName("markerScreen");
+            for (var i = 0; i < markerPopups.length; i++) {
+                markerPopups.item(i).style.display = "none";
+            }
+        }
+        
+        function closeMenuScreen() {
+            var menuElements = document.getElementsByClassName("menuScreen");
+            var menuElementListLength = menuElements.length;
+            for (var i = 0; i < menuElementListLength; i++) {
+                document.body.removeChild(menuElements.item(0));
+            }
+        }
+        
+        function openPanorama() {
+            var urls = ["http://dm.gatech.edu/~jig3/ar/front.0001.png",
+                    "http://dm.gatech.edu/~jig3/ar/front.0003.png",
+                    "http://dm.gatech.edu/~jig3/ar/front.0004.png",
+                    "http://dm.gatech.edu/~jig3/ar/front.0005.png",
+                    "http://dm.gatech.edu/~jig3/ar/front.0000.png",
+                    "http://dm.gatech.edu/~jig3/ar/front.0002.png"];
+                    
+            geoSpot = new AR.GeoSpotPanorama( urls );
+            
+            popupBox("Close panorama", "10%", "30%", function() {
+                closeMenuScreen();
+                geoSpot.hide();
+                openMarkerScreen();
+            });
+        }
+        
+        </script>
+    </head>
+    <body>
+        <script src="http://argon.gatech.edu/argon_o.js"></script>
+    </body>
+</html>
