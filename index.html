@@ -6,12 +6,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 <meta name="arenabled" />
+<script type="text/javascript" src="ar.js"></script>
+</head>
+<body>
+<script src="http://argon.gatech.edu/argon_o.js"></script>
 <script type="text/javascript">
 
-
 var myAppController = {
-
-  
+    
     onArgonReady: function() {
 
         var frameMarker1 =
@@ -20,30 +22,31 @@ var myAppController = {
         var trackedObject1 = new ARGON.TrackedObject();
         trackedObject1.setTarget(frameMarker1);
         
+        var MARKER_POPUP_WIDTH = 80;
+        var MARKER_POPUP_HEIGHT = 12;
+        
         var divEl1 = document.createElement("div");
         divEl1.className = "markerScreen";
-        divEl1.style.width = "180px";
-        divEl1.style.height = "40px";
-		divEl1.style.lineHeight = "40px"
+        divEl1.style.width = MARKER_POPUP_WIDTH + "px";
+        divEl1.style.height = MARKER_POPUP_HEIGHT + "px";
+		//divEl1.style.lineHeight = "40px"
         divEl1.innerText = "Butler Street YMCA";
 
         divEl1.style.backgroundColor = "rgba(255,255,0,0.6)";
         divEl1.style.border = "2px solid white";
         divEl1.style.borderRadius = "5px";
         divEl1.style.color = "black";
-        divEl1.style.fontFamily = "calibri";
-        divEl1.style.fontSize = "1.1em";
-        //divEl1.style.opacity = "0.6";
-		
+        divEl1.style.fontFamily = "Calibri sans-serif";
+        divEl1.style.fontSize = "0.2em";
         divEl1.addEventListener("click", function() {
             openMenuScreen("Butler St. YMCA");
         });
         
         var cssObject1 = new THREE.CSSObject(divEl1);
-        cssObject1.width = 50;
-        cssObject1.height = 20;
+        cssObject1.width = MARKER_POPUP_WIDTH;
+        cssObject1.height = MARKER_POPUP_HEIGHT;
         cssObject1.position.x = 0.0;
-        cssObject1.position.y = 40.0;
+        cssObject1.position.y = 36.0;
         cssObject1.position.z = 0.0;
         trackedObject1.add(cssObject1);
         
@@ -76,211 +79,6 @@ document.addEventListener(
     "AR.ArgonReadyEvent", myAppController.onArgonReady
 );
 
-
-function startTour(){
-	if(typeof(Storage)!=="undefined"){
-		localStorage.name = 'Butler Street YMCA';
-		localStorage.latitude = 33.748995;
-		localStorage.longitude = -84.387982;
-	}
-	else{
-	  alert("Oops! this browser doesn't support HTML5 Web-storage!");
-	}
-	window.location.assign('ar-tour.html');
-}
-
-function openMenuScreen(locationName) {
-    closeMenuScreen();
-    closeMarkerScreen();
-    popupBox(locationName, "10%", "15%");
-    popupBox("Take me there!", "10%", "40%", function() {
-        //closeMenu();
-        //navigateTo(locationName);
-		startTour();
-    });
-    popupBox("Virtual Tour", "10%", "50%", function() {
-        closeMenuScreen();
-        openPanorama();
-    });
-    popupBox("Cancel", "10%", "60%", function() {
-        closeMenuScreen();
-        openMarkerScreen();
-    });
-}
-
-// menu box popup
-function popupBox(label, height, topOffset, onclickEvent) {
-    var popupDiv = document.createElement("div");
-    //var textDiv = document.createElement("div");
-    popupDiv.className = "menuScreen";
-    
-    popupDiv.style.color = "black";
-    popupDiv.style.fontFamily = "sans-serif";
-    popupDiv.style.fontSize = "24px";
-    //textDiv.style.position = "absolute";
-    //textDiv.style.top = "12px";
-    //textDiv.style.width = "100%";
-    popupDiv.innerText = label;
-    
-    popupDiv.style.backgroundColor = "yellow";
-    popupDiv.style.border = "1px solid gray";
-    popupDiv.style.height = height;
-    popupDiv.style.left = "64px";
-    popupDiv.style.opacity = "0.6";
-    popupDiv.style.position = "absolute";
-    popupDiv.style.top = topOffset;
-    popupDiv.style.width = "192px";
-    
-    if (onclickEvent) {
-        popupDiv.addEventListener("click", onclickEvent);
-    }
-    
-    //popupDiv.appendChild(textDiv);
-    document.body.appendChild(popupDiv);
-}
-
-function bottomBar(label) {
-    var wrapperDiv = document.createElement("div");
-    var handleDiv = document.createElement("div");
-    var textDiv = document.createElement("div");
-    
-    handleDiv.id = "bottomBarHandle";
-    handleDiv.className = "markerScreen";
-    handleDiv.style.backgroundColor = "gray";
-    handleDiv.style.color = "black";
-    handleDiv.style.fontFamily = "sans-serif";
-    handleDiv.style.fontSize = "12px";
-    handleDiv.style.height = "16px";
-    handleDiv.style.left = "0";
-    handleDiv.style.opacity = "0.6";
-    handleDiv.style.position = "absolute";
-    handleDiv.style.top = "394px";
-    handleDiv.style.width = "320px";
-    handleDiv.innerText = "=";
-    handleDiv.addEventListener("click", openBottomBar);
-    
-    textDiv.id = "bottomBarText";
-    textDiv.style.backgroundColor = "yellow";
-    textDiv.style.color = "black";
-    textDiv.style.display = "none";
-    textDiv.style.fontFamily = "sans-serif";
-    textDiv.style.fontSize = "18px";
-    textDiv.style.height = "38px";
-    textDiv.style.left = "0";
-    textDiv.style.opacity = "0.6";
-    textDiv.style.position = "absolute";
-    textDiv.style.top = "372px";
-    textDiv.style.width = "320px";
-    textDiv.innerText = "More locations...";
-    textDiv.addEventListener("click", function() {
-        closeMarkerScreen();
-        openLocationList();
-    });
-    
-    document.body.appendChild(handleDiv);
-    document.body.appendChild(textDiv);
-}
-function openBottomBar() {
-    var curDiv = document.getElementById("bottomBarText");
-    curDiv.style.display = "block";
-    curDiv.className = "markerScreen";
-    curDiv = document.getElementById("bottomBarHandle");
-    curDiv.style.top = "356px";
-    curDiv.removeEventListener("click", openBottomBar);
-    curDiv.addEventListener("click", closeBottomBar);
-}
-function closeBottomBar() {
-    var curDiv = document.getElementById("bottomBarText");
-    curDiv.style.display = "none";
-    curDiv.className = "";
-    curDiv = document.getElementById("bottomBarHandle");
-    curDiv.style.top = "394px";
-    curDiv.removeEventListener("click", closeBottomBar);
-    curDiv.addEventListener("click", openBottomBar);
-}
-
-function openMarkerScreen() {
-    var markerPopups = document.getElementsByClassName("markerScreen");
-    for (var i = 0; i < markerPopups.length; i++) {
-        markerPopups.item(i).style.display = "block";
-    }
-}
-
-function closeMarkerScreen() {
-    var markerPopups = document.getElementsByClassName("markerScreen");
-    for (var i = 0; i < markerPopups.length; i++) {
-        markerPopups.item(i).style.display = "none";
-    }
-}
-
-function closeMenuScreen() {
-    var menuElements = document.getElementsByClassName("menuScreen");
-    var menuElementListLength = menuElements.length;
-    for (var i = 0; i < menuElementListLength; i++) {
-        document.body.removeChild(menuElements.item(0));
-    }
-}
-
-function openLocationList() {
-    var listDiv = document.createElement("div");
-    listDiv.className = "menuScreen";
-    
-    listDiv.style.height = "40%";
-    listDiv.style.left = "48px";
-    listDiv.style.overflow = "scroll";
-    listDiv.style.position = "absolute";
-    listDiv.style.top = "15%";
-    listDiv.style.width = "224px";
-    
-    var myPlaces = ["Atlanta Daily World", "Butler Street YMCA", 
-        "Herndon Building", "Wheat Street Baptist Church"];
-    for (var i = 0; i < myPlaces.length; i++) {
-        var buttonDiv = document.createElement("div");
-        buttonDiv.style.backgroundColor = "yellow";
-        buttonDiv.style.border = "1px solid gray";
-        buttonDiv.style.color = "black";
-        buttonDiv.style.fontFamily = "sans-serif";
-        buttonDiv.style.fontSize = "18px";
-        buttonDiv.style.height = "30%";
-        buttonDiv.style.opacity = "0.6";
-        buttonDiv.style.textAlign = "left";
-        buttonDiv.style.top = (30 * i) + "%";
-        buttonDiv.innerText = myPlaces[i];
-        buttonDiv.addEventListener("click", function() {
-            openMenuScreen(myPlaces[i]);
-        });
-        
-        listDiv.appendChild(buttonDiv);
-    }
-    
-    document.body.appendChild(listDiv);
-    
-    popupBox("Cancel", "10%", "60%", function() {
-        closeMenuScreen();
-        openMarkerScreen();
-    });
-}
-
-function openPanorama() {
-    var urls = ["http://dm.gatech.edu/~jig3/ar/church.0001.png",
-            "http://dm.gatech.edu/~jig3/ar/church.0003.png",
-            "http://dm.gatech.edu/~jig3/ar/church.0004.png",
-            "http://dm.gatech.edu/~jig3/ar/church.0005.png",
-            "http://dm.gatech.edu/~jig3/ar/church.0000.png",
-            "http://dm.gatech.edu/~jig3/ar/church.0002.png"];
-    
-    geoSpot = new AR.GeoSpotPanorama( urls );
-    
-    popupBox("Close panorama", "10%", "30%", function() {
-        closeMenuScreen();
-        geoSpot.hide();
-        openMarkerScreen();
-    });
-}
-
 </script>
-</head>
-<body>
-<script src="http://argon.gatech.edu/argon_o.js"></script>
 </body>
 </html>
