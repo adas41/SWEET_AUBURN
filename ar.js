@@ -13,24 +13,21 @@ function startTour(){
 function openMenuScreen(locationName) {
     closeMenuScreen();
     closeMarkerScreen();
-    popupBox(locationName, "10%", "15%", false, "lightgray");
-    popupBox("Take me there!", "10%", "40%", function() {
-        //closeMenu();
-        //navigateTo(locationName);
+    popupBox(locationName, "10%", "15%", "lightgray");
+    popupBox("Take me there!", "10%", "40%", "yellow", function() {
 		startTour();
     });
-    popupBox("Virtual Tour", "10%", "50%", function() {
+    popupBox("Virtual Tour", "10%", "50%", "yellow", function() {
         closeMenuScreen();
         openPanorama();
     });
-    popupBox("Cancel", "10%", "60%", function() {
+    popupBox("Cancel", "10%", "60%", "yellow", function() {
         closeMenuScreen();
         openMarkerScreen();
     });
 }
 
-// menu box popup
-function popupBox(label, height, topOffset, onclickEvent, bgColor) {
+function popupBox(label, height, topOffset, bgColor, onclickEvent) {
     var popupDiv = document.createElement("div");
     //var textDiv = document.createElement("div");
     popupDiv.className = "menuScreen";
@@ -38,7 +35,7 @@ function popupBox(label, height, topOffset, onclickEvent, bgColor) {
     popupDiv.style.color = "black";
     popupDiv.style.fontFamily = "sans-serif";
     popupDiv.style.fontSize = "24px";
-    popupDiv.style.lineHeight = "256px";
+    popupDiv.style.lineHeight = "48px";
     //textDiv.style.position = "absolute";
     //textDiv.style.top = "12px";
     //textDiv.style.width = "100%";
@@ -122,42 +119,6 @@ function bottomBar(label) {
     
     document.body.appendChild(gradientDiv);
     document.body.appendChild(wrapperDiv);
-    
-    /*handleDiv.id = "bottomBarHandle";
-    handleDiv.className = "markerScreen";
-    handleDiv.style.backgroundColor = "gray";
-    handleDiv.style.color = "black";
-    handleDiv.style.fontFamily = "sans-serif";
-    handleDiv.style.fontSize = "12px";
-    handleDiv.style.height = "16px";
-    handleDiv.style.left = "0";
-    handleDiv.style.opacity = "0.6";
-    handleDiv.style.position = "absolute";
-    handleDiv.style.top = "394px";
-    handleDiv.style.width = "320px";
-    handleDiv.innerText = "=";
-    handleDiv.addEventListener("click", openBottomBar);
-    
-    textDiv.id = "bottomBarText";
-    textDiv.style.backgroundColor = "yellow";
-    textDiv.style.color = "black";
-    textDiv.style.display = "none";
-    textDiv.style.fontFamily = "sans-serif";
-    textDiv.style.fontSize = "18px";
-    textDiv.style.height = "38px";
-    textDiv.style.left = "0";
-    textDiv.style.opacity = "0.6";
-    textDiv.style.position = "absolute";
-    textDiv.style.top = "372px";
-    textDiv.style.width = "320px";
-    textDiv.innerText = "More locations...";
-    textDiv.addEventListener("click", function() {
-        closeMarkerScreen();
-        openLocationList();
-    });
-    
-    document.body.appendChild(handleDiv);
-    document.body.appendChild(textDiv);*/
 }
 function openBottomBar() {
     var curDiv = document.getElementById("bottomBarText");
@@ -234,7 +195,7 @@ function openLocationList() {
     
     document.body.appendChild(listDiv);
     
-    popupBox("Cancel", "10%", "60%", function() {
+    popupBox("Cancel", "10%", "60%", "yellow", function() {
         closeMenuScreen();
         openMarkerScreen();
     });
@@ -250,7 +211,7 @@ function openPanorama() {
     
     geoSpot = new AR.GeoSpotPanorama( urls );
     
-    popupBox("Close panorama", "10%", "30%", function() {
+    popupBox("Close panorama", "10%", "80%", "yellow", function() {
         closeMenuScreen();
         geoSpot.hide();
         openMarkerScreen();
