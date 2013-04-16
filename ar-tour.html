@@ -7,7 +7,8 @@
 		<link rel="stylesheet" href="./assets/css/styles.css" />
 		
 		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
-		<script type="text/javascript" src="./assets/js/jquery.1.9.js"></script>	   
+		<script type="text/javascript" src="./assets/js/jquery.1.9.js"></script>	
+        <script type="text/javascript" src="ar.js?v=1.35"></script>
 	</head> 
 	<body style=""> 
 	
@@ -20,7 +21,7 @@
 			<div id="toolbar">
 				<div id="summaryDiv" class="infoDiv"></div>	
 				<div id="distanceDiv" class="infoDiv"></div>
-				<div id="audioControl" ></div>
+				<div id="audioControl"></div>
 				<div id="durationDiv" class="infoDiv"></div>
 			</div>
 			
@@ -40,6 +41,7 @@
 		
 		
 		<script type="text/javascript"> 
+		    bottomBar();
 		
 			$("#summaryDiv").text("Preparing your route...");
 				$("#summaryDiv").fadeOut(5000, function(){
@@ -294,3 +296,4 @@
 		
 	</body>
 </html>
+

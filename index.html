@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
 <title>Frame Marker Demo</title>
@@ -7,7 +8,7 @@
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 <meta name="arenabled" />
 <script type="text/javascript" src="./assets/js/jquery.1.9.js"></script>
-<script type="text/javascript" src="ar.js?v=1.04"></script>
+<script type="text/javascript" src="ar.js?v=1.35"></script>
 </head>
 <body>
 <script src="http://argon.gatech.edu/argon_o.js"></script>
@@ -23,21 +24,21 @@ var myAppController = {
         var trackedObject1 = new ARGON.TrackedObject();
         trackedObject1.setTarget(frameMarker1);
         
-        var MARKER_POPUP_WIDTH = 80;
-        var MARKER_POPUP_HEIGHT = 12;
+        var MARKER_POPUP_WIDTH = 86;
+        var MARKER_POPUP_HEIGHT = 16;
         
         var divEl1 = document.createElement("div");
         divEl1.className = "markerScreen";
         divEl1.style.width = MARKER_POPUP_WIDTH + "px";
         divEl1.style.height = MARKER_POPUP_HEIGHT + "px";
-		//divEl1.style.lineHeight = "40px"
+		divEl1.style.lineHeight = MARKER_POPUP_HEIGHT + "px";
         divEl1.innerText = "Butler Street YMCA";
 
-        divEl1.style.backgroundColor = "rgba(255,255,0,0.6)";
+        divEl1.style.backgroundColor = menuColor;
         divEl1.style.border = "2px solid white";
         divEl1.style.borderRadius = "5px";
         divEl1.style.color = "black";
-        divEl1.style.fontFamily = "calibri sans-serif";
+        divEl1.style.fontFamily = "sans-serif";
         divEl1.style.fontSize = "0.2em";
         divEl1.addEventListener("click", function() {
             openMenuScreen("Butler Street YMCA");

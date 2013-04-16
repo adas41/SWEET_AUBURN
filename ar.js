@@ -1,4 +1,9 @@
 var bottomBarTimeoutId = -1;
+var menuColor = "rgba(252, 201, 5, 0.6)";
+var infoColor = "rgba(43, 39, 39, 0.6)";
+
+var panoramaObject;
+var panoramaOverlay;
 
 function startTour(){
 	if(typeof(Storage)!=="undefined"){
@@ -15,48 +20,56 @@ function startTour(){
 function openMenuScreen(locationName) {
     closeMenuScreen();
     closeMarkerScreen();
-    popupBox(locationName, "48px", "15%");
-    popupBox("Take me there!", "48px", "40%", function() {
+    var titleWidth = locationName.length * 11;
+    popupBox(
+        locationName, "48px", "15%", 
+        titleWidth + "px", ((320 - titleWidth) / 2) + "px"
+    );
+    menuBox("Take me there!", "48px", "40%", function() {
 		startTour();
     });
-    popupBox("Virtual Tour", "48px", "50%", function() {
+    menuBox("Virtual Tour", "48px", "50%", function() {
         closeMenuScreen();
-        openPanorama();
+        openPanorama(locationName);
     });
-    popupBox("Cancel", "48px", "60%", function() {
+    menuBox("Cancel", "48px", "60%", function() {
         closeMenuScreen();
         openMarkerScreen();
     });
 }
 
-function popupBox(label, height, topOffset, onclickEvent) {
+function menuBox(label, height, topOffset, onclickEvent) {
+    popupBox(label, height, topOffset, "192px", "64px", onclickEvent);
+}
+
+function popupBox(label, height, topOffset, width, leftOffset, onclickEvent) {
     var popupDiv = document.createElement("div");
+    var textDiv = document.createElement("div");
     popupDiv.className = "menuScreen";
     
-    popupDiv.style.fontFamily = "sans-serif";
-    popupDiv.style.fontSize = "24px";
-    popupDiv.style.lineHeight = height;
-    popupDiv.innerText = label;
+    textDiv.style.fontFamily = "sans-serif";
+    textDiv.style.fontSize = "22px";
+    textDiv.style.lineHeight = "44px";
+    textDiv.innerText = label;
+    textDiv.style.border = "2px solid white";
     
-    popupDiv.style.border = "2px solid white";
     popupDiv.style.height = height;
+    popupDiv.style.left = leftOffset;
     popupDiv.style.overflow = "scroll";
     popupDiv.style.position = "absolute";
     popupDiv.style.top = topOffset;
+    popupDiv.style.width = width;
     
     if (onclickEvent) {
-        popupDiv.style.backgroundColor = "rgba(255, 255, 0, 0.6)";
+        popupDiv.style.backgroundColor = menuColor;
         popupDiv.style.color = "black";
-        popupDiv.style.left = "64px";
-        popupDiv.style.width = "192px";
         popupDiv.addEventListener("click", onclickEvent);
     } else {
-        popupDiv.style.backgroundColor = "rgba(43, 39, 39, 0.6)";
+        popupDiv.style.backgroundColor = infoColor;
         popupDiv.style.color = "white";
-        popupDiv.style.left = "48px";
-        popupDiv.style.width = "224px";
     }
     
+    popupDiv.appendChild(textDiv);
     document.body.appendChild(popupDiv);
 }
 
@@ -102,14 +115,13 @@ function bottomBar(label) {
     handleDiv.style.width = "320px";
     wrapperDiv.appendChild(handleDiv);
     
-    textDiv.style.backgroundColor = "yellow";
+    textDiv.style.backgroundColor = menuColor;
     textDiv.style.color = "black";
     textDiv.style.fontFamily = "sans-serif";
     textDiv.style.fontSize = "20px";
     textDiv.style.height = (barSize - handleSize) + "px";
     textDiv.style.left = "0";
     textDiv.style.lineHeight = (barSize - handleSize) + "px";
-    textDiv.style.opacity = "0.6";
     textDiv.style.position = "absolute";
     textDiv.style.top = (barSize + handleSize) + "px";
     textDiv.style.width = "320px";
@@ -173,14 +185,13 @@ function openLocationList() {
     for (var i = 0; i < myPlaces.length; i++) {
         var buttonDiv = document.createElement("div");
         buttonDiv.id = "listItem" + i;
-        buttonDiv.style.backgroundColor = "yellow";
+        buttonDiv.style.backgroundColor = menuColor;
         buttonDiv.style.border = "1px solid white";
         buttonDiv.style.color = "black";
         buttonDiv.style.fontFamily = "sans-serif";
         buttonDiv.style.fontSize = "19px";
         buttonDiv.style.height = "48px";
         buttonDiv.style.lineHeight = "48px";
-        buttonDiv.style.opacity = "0.6";
         buttonDiv.style.paddingLeft = "8px";
         buttonDiv.style.textAlign = "left";
         buttonDiv.style.top = (48 * i) + "px";
@@ -199,13 +210,13 @@ function openLocationList() {
         );
     }
     
-    popupBox("Cancel", "48px", "80%", function() {
+    menuBox("Cancel", "48px", "80%", function() {
         closeMenuScreen();
         openMarkerScreen();
     });
 }
 
-function openPanorama() {
+function openPanorama(locationName) {
     var urls = ["http://dm.gatech.edu/~jig3/ar/church.0001.png",
             "http://dm.gatech.edu/~jig3/ar/church.0003.png",
             "http://dm.gatech.edu/~jig3/ar/church.0004.png",
@@ -213,11 +224,75 @@ function openPanorama() {
             "http://dm.gatech.edu/~jig3/ar/church.0000.png",
             "http://dm.gatech.edu/~jig3/ar/church.0002.png"];
     
-    geoSpot = new AR.GeoSpotPanorama( urls );
+    panoramaObject = new AR.GeoSpotPanorama( urls );
     
-    popupBox("Close panorama", "48px", "80%", function() {
+    var titleWidth = locationName.length * 11;
+    popupBox(
+        locationName, "48px", "48px", 
+        titleWidth, ((320 - titleWidth) / 2) + "px"
+    );
+    
+    menuBox("Close panorama", "48px", "384px", function() {
+        ARGON.World.remove(panoramaOverlay);
+        panoramaObject.hide();
         closeMenuScreen();
-        geoSpot.hide();
         openMarkerScreen();
     });
+    
+    var panoramaText;
+    switch (locationName) {
+        case "Butler Street YMCA":
+            panoramaText = "This building became a center of social life " + 
+                "on the Avenue by providing recreation and supervised " + 
+                "activity space for younger blacks and a meeting place for " + 
+                "older blacks.";
+            break;
+        case "Wheat Street Baptist Church":
+            panoramaText = "Wheat Street Baptist Church has been an " + 
+                "important spiritual/social institution in the Sweet " + 
+                "Auburn Ave. community since its inception in 1869. Today " + 
+                "it continues functioning as a community church";
+            break;
+        default:
+            panoramaText = "No information for this location... yet.";
+            break;
+    }
+    
+    var popupDiv = document.createElement("div");
+    var textDiv = document.createElement("div");
+    
+    var POPUP_WIDTH = 96;
+    var POPUP_HEIGHT = 96;
+    
+    textDiv.style.border = "1px solid white";
+    textDiv.style.fontFamily = "sans-serif";
+    textDiv.style.fontSize = "8px";
+    textDiv.style.lineHeight = "8px";
+    textDiv.style.padding = "2px";
+    textDiv.style.textAlign = "left";
+    textDiv.innerText = panoramaText;
+    
+    popupDiv.id = "cssContent";
+    popupDiv.style.backgroundColor = infoColor;
+    //popupDiv.style.height = POPUP_HEIGHT + "px";
+    popupDiv.style.overflow = "scroll";
+    popupDiv.style.position = "absolute";
+    popupDiv.style.width = POPUP_WIDTH + "px";
+    popupDiv.style.WebkitTransform = "scale3d(-1, 1, 1)";
+    
+    popupDiv.appendChild(textDiv);
+    
+    // create CSS Object in the scene graph
+    panoramaOverlay = new THREE.CSSObject(popupDiv);
+    
+    // the width and height is used to align things
+    panoramaOverlay.width = POPUP_WIDTH;
+    panoramaOverlay.height = POPUP_HEIGHT;
+    panoramaOverlay.position.x = 0.0;
+    panoramaOverlay.position.y = 0.0;
+    panoramaOverlay.position.z = 200.0;
+    panoramaOverlay.rotation.y = Math.PI;
+    
+    // attach directly to world. the orientation of the faces must be changed
+    ARGON.World.add(panoramaOverlay);
 }
